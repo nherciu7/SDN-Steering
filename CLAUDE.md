@@ -141,7 +141,7 @@ everything.
 ## Measurements (part C)
 
 - Telemetry: h1 and h2 ping srv (`-i 0.2`, for failover `-i 0.1`).
-- Load: bulk = 0 (none) or 1 (h3 → srv `iperf3 -b 8M`, UDP).
+- Load: bulk = 0 (none) or 1 (h3 → srv `iperf3 -b 5M`, UDP).
 - Each run: 30 s (midterm). Raw logs to
   `results/raw/<mode>_bulk<b>_rep<r>/`.
 - KPIs: RTT avg/min/max (ms), packet loss (%), first-packet delay
