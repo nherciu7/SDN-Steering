@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.vscode/
+.claude/settings.local.json
+results/raw/*/
+!results/raw/.gitkeep
