@@ -10,6 +10,7 @@ import csv
 import json
 import os
 import re
+import statistics
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW = os.path.join(REPO, 'results', 'raw')
@@ -70,12 +71,13 @@ def main():
                 row['rtt_avg'] = round(sum(values) / len(values), 3)
                 row['rtt_min'] = min(values)
                 row['rtt_max'] = max(values)
-            # First-packet delay = RTT of ping #1 minus the average of the others.
+            # First-packet delay = RTT of ping #1 minus the MEDIAN of the others.
+            # The median (middle value) is not pulled up by a few slow pings.
             # If ping #1 got no reply we leave both fields empty.
             if 1 in rtts and len(rtts) > 1:
                 rest = [v for seq, v in rtts.items() if seq != 1]
                 row['first_ping_ms'] = rtts[1]
-                row['first_packet_delay_ms'] = round(rtts[1] - sum(rest) / len(rest), 3)
+                row['first_packet_delay_ms'] = round(rtts[1] - statistics.median(rest), 3)
             rows.append(row)
 
     with open(OUT, 'w', newline='') as f:

@@ -10,7 +10,7 @@ What it does:
   3. builds the network with create_net(mode) from topology/topo.py
   4. starts an iperf3 server on srv
   5. h1 and h2 ping srv every 0.2 s for <duration> seconds
-     (bulk=1: at the same time h3 sends 8 Mbit/s UDP to srv with iperf3)
+     (bulk=1: at the same time h3 sends 5 Mbit/s UDP to srv with iperf3)
   6. stops everything and cleans up again
 All output goes to results/raw/<mode>_bulk<b>_rep<r>/.
 """
@@ -84,7 +84,7 @@ def main():
                              stdout=out, stderr=subprocess.STDOUT))
     if a.bulk == 1:
         out = open(os.path.join(run_dir, 'iperf.json'), 'w')
-        procs.append(h3.popen(['iperf3', '-c', SRV_IP, '-u', '-b', '8M',
+        procs.append(h3.popen(['iperf3', '-c', SRV_IP, '-u', '-b', '5M',
                                '-t', str(a.duration), '-J'],
                               stdout=out, stderr=subprocess.STDOUT))
 

@@ -19,7 +19,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CSV = os.path.join(REPO, 'results', 'summary.csv')
 PLOTS = os.path.join(REPO, 'results', 'plots')
 MODES = ['static', 'reactive']
-BULK_LABEL = {0: 'no bulk load', 1: 'bulk 8 Mbit/s'}
+BULK_LABEL = {0: 'no bulk load', 1: 'bulk 5 Mbit/s'}
 BULK_COLOR = {0: '#4C78A8', 1: '#F58518'}  # blue / orange
 
 
@@ -50,6 +50,7 @@ def bar_chart(rows, column, ylabel, title, filename, bulks=(0, 1)):
             labeled.add(bulk)
             # write the average just above the top of the error bar
             ax.text(x, max(vals), '%.2f\n' % avg, ha='center', va='bottom', fontsize=8)
+    ax.set_xlim(-0.6, len(MODES) - 0.4)  # keep room for every mode, even if not measured yet
     ax.set_xticks(range(len(MODES)))
     ax.set_xticklabels(MODES)
     ax.set_ylabel(ylabel)
@@ -67,8 +68,11 @@ def main():
     rows = list(csv.DictReader(open(CSV)))
     os.makedirs(PLOTS, exist_ok=True)
     bar_chart(rows, 'rtt_avg', 'RTT (ms)', 'Average RTT h1/h2 -> srv', 'rtt.png')
+    # First-packet delay only without load: under bulk traffic the queue
+    # fills after ping #1, so "first minus the rest" is not meaningful.
     bar_chart(rows, 'first_packet_delay_ms', 'First-packet delay (ms)',
-              'First ping RTT minus average RTT', 'first_packet_delay.png')
+              'First ping RTT minus median RTT (bulk=0 only)',
+              'first_packet_delay.png', bulks=(0,))
     # Throughput only exists when there is bulk traffic.
     bar_chart(rows, 'throughput_mbps', 'Throughput (Mbit/s)',
               'iperf3 UDP throughput h3 -> srv', 'throughput.png', bulks=(1,))
