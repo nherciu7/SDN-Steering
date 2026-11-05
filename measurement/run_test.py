@@ -17,6 +17,7 @@ All output goes to results/raw/<mode>_bulk<b>_rep<r>/.
 import argparse
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -38,9 +39,22 @@ def start_ryu(run_dir):
     ryu = shutil.which('ryu-manager') or os.path.expanduser('~%s/.local/bin/ryu-manager' % user)
     log = open(os.path.join(run_dir, 'controller.log'), 'w')
     cmd = ['sudo', '-u', user, ryu, os.path.join(REPO, 'controller', 'reactive_app.py')]
-    proc = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT)
+    # start_new_session: sudo + ryu-manager get their own process group,
+    # so at the end we can stop both together (see stop_ryu).
+    proc = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT,
+                            start_new_session=True)
     time.sleep(3)  # give Ryu time to open port 6653
     return proc
+
+
+def stop_ryu(proc):
+    """Stop Ryu. proc.terminate() would only hit sudo, which does not pass
+    the signal on to ryu-manager, so we signal the whole process group."""
+    os.killpg(proc.pid, signal.SIGTERM)
+    try:
+        proc.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        os.killpg(proc.pid, signal.SIGKILL)
 
 
 def main():
@@ -99,8 +113,7 @@ def main():
     iperf_srv.terminate()
     net.stop()
     if ryu:
-        ryu.terminate()
-        ryu.wait()
+        stop_ryu(ryu)
     subprocess.call(['mn', '-c'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # Files were written by root; give them back to the normal user.

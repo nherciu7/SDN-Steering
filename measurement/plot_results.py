@@ -57,7 +57,8 @@ def bar_chart(rows, column, ylabel, title, filename, bulks=(0, 1)):
     ax.set_title(title)
     ax.grid(axis='y', alpha=0.3)
     ax.set_ylim(top=ax.get_ylim()[1] * 1.25)  # headroom for labels and legend
-    ax.legend(loc='upper right')
+    if len(bulks) > 1:  # with one bulk level the title already says which
+        ax.legend(loc='upper left')
     fig.tight_layout()
     fig.savefig(os.path.join(PLOTS, filename), dpi=120)
     plt.close(fig)
